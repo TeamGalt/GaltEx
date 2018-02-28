@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>GALTEX - Galt Exchange</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="initial-scale=1">
+	<meta name="application-name" content="Galtex">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="stylesheet" type="text/css" href="static/style.css">
+    <link rel="icon" href="media/mobile-icon.png">
+    <link rel="icon" sizes="192x192" href="media/mobile-icon-192.png">
+    <link rel="apple-touch-icon" href="media/mobile-icon-apple.png"/>
+</head>
+<body>
+
+<header>
+	<wrap>
+		<h1>GALTEX</h1> 
+		<h2>Galt Exchange</h2> 
+		<div id="markets"><a href="#" class="selected">Forex</a>  <a href="#">Crypto</a>  <a href="#">Wall St</a>  <a href="#">Galt St</a></div>
+		<h3>GALT <span id="galt-price">1.25</span></h3>
+	</wrap>
+</header>
+
+<div id="main">
+	<wrap>
+		<div id="market-index">
+			<h1 class="big">Market Indices</h1>
+			<div class="cell">
+				<label>Volumen</label>
+				<span id="total-volumen">0 M</span>
+			</div>
+			<div class="cell">
+				<label>Market Cap</label>
+				<span id="total-marketcap">0 M</span>
+			</div>
+			<div class="cell">
+				<label>Change 1h</label>
+				<span id="total-change01">0.00%</span>
+			</div>
+			<div class="cell">
+				<label>Change 24h</label>
+				<span id="total-change24">0.00%</span>
+			</div>
+		</div>
+
+		<div id="sidebar">
+			<div id="coins-wrap">
+				<table id="coins">
+					<thead>
+						<tr> <th onclick="sortTable(event,0,0)">Symbol</th> <th onclick="sortTable(event,1,2)">USD Price</th> <th onclick="sortTable(event,2,2)">XLM Price</th> <th onclick="sortTable(event,3,2)">Change 1h</th> <th onclick="sortTable(event,4,2)">Change 24h</th> </tr>
+					</thead>
+					<tbody>
+						<tr id="USD" class="select"> <td>USD </td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="EUR"> <td>EUR</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="GBP"> <td>GBP</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="JPY"> <td>JPY</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="CNY"> <td>CNY</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="RUB"> <td>RUB</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="AUD"> <td>AUD</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="CAD"> <td>CAD</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="MXN"> <td>MXN</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+						<tr id="BRL"> <td>BRL</td> <td>0.0000</td> <td class="price-up">0.0000</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> </tr>
+					</tbody>
+				</table>
+				<div id="updated">
+					<button id="refresh" onclick="onRefresh()">Update</button>
+					<span id="update-time">Updated every 30 mins</span>
+				</div>
+			</div>
+
+			<div id="form-buy">
+				<div class="form-head"><h1 class="form-title">Buy</h1><h2 id="form-buy-sym" class="form-market">XLM : USD</h2></div>
+				<div class="form-order">
+					<div class="form-price">
+						<label>Price <span id="label-buy-sym1">USD</span></label>
+						<input type="textbox" id="input-buy" name="price" value="0.0000">
+					</div>
+					<div class="form-qty">
+						<label for="input-buy-qty" onclick="onBuyQty()">Amount <span id="input-buy-sym">XLM</span></label>
+						<input type="textbox" id="input-buy-qty" name="input-buy-qty" value="0.0000">
+					</div>
+					<div class="form-amount">
+						<label for="input-buy-usd" onclick="onBuyUsd()">Total <span id="label-buy-sym2">USD</span></label>
+						<input type="textbox" id="input-buy-usd" name="input-buy-usd" value="0.00">
+					</div>
+					<button id="button-buy" onclick="onBuy()">BUY</button>
+				</div>
+			</div>
+
+			<div id="form-sell">
+				<div class="form-head"><h1 class="form-title">Sell</h1><h2 id="form-sell-sym" class="form-market">XLM : USD</h2></div>
+				<div class="form-order">
+					<div class="form-price">
+						<label>Price <span id="label-sell-sym1">USD</span></label>
+						<input type="textbox" id="input-sell" name="price" value="0.0000">
+					</div>
+					<div class="form-qty">
+						<label for="input-sell-qty" onclick="onSellQty()">Amount <span id="input-sell-sym">XLM</span></label>
+						<input type="textbox" id="input-sell-qty" name="input-sell-qty" value="0.0000">
+					</div>
+					<div class="form-amount">
+						<label for="input-sell-usd" onclick="onSellUsd()">Total <span id="label-sell-sym2">USD</span></label>
+						<input type="textbox" id="input-sell-usd" name="input-sell-usd" value="0.00">
+					</div>
+					<button id="button-sell" onclick="onSell()">SELL</button>
+				</div>
+			</div>
+
+			<div id="login-box">
+				<h4>To trade in GALTEX you can use your own wallet or LOGIN</h4>
+				<li><input id="login-key" type="textbox" placeholder="Enter your public or secret key"></li>
+				<li><button id="login-go" onclick="onLogin()">LOGIN</button></li>
+				<x id="test">TESTNET</x>
+			</div>
+
+			<div id="myorders">
+				<div id="myorders-head"><h1 id="myorders-title">My Orders</h1></div>
+				<table id="myorders-list">
+					<thead><tr><th>ID</th><th>Type</th><th>Amount</th><th>Market</th><th>Price</th><th>&nbsp;</th></tr></thead>
+					<tbody>
+						<tr><td colspan="6"><div style="text-align:center">No orders</div></td></tr>
+						<tr><td colspan="6">&nbsp;</td></tr>
+						<tr><td colspan="6">&nbsp;</td></tr>
+						<tr><td colspan="6">&nbsp;</td></tr>
+						<tr><td colspan="6">&nbsp;</td></tr>
+						<tr><td colspan="6">&nbsp;</td></tr>
+						<tr><td colspan="6">&nbsp;</td></tr>
+						<tr><td colspan="6">&nbsp;</td></tr>
+					</tbody>
+					<!-- <tfoot><tr><td colspan="5">Last orders</td></tr></tfoot> -->
+				</table>
+			</div>
+		</div>
+
+		<div id="content">
+			<div id="chart-area">
+				<!-- <svg id="chart" width="584" height="310"></svg> -->
+				<!-- <img id="spinner" src="spinner.gif"> -->
+			</div>
+			<div id="chart-info">
+				<h1 id="chart-label">XLM : USD</h1> 
+				<div id="chart-menu"> 
+					<button id="chart-action1" class="chart-action" onclick="onChartPeriod(0)">4 Hours</button> 
+					<button id="chart-action2" class="chart-action selected" onclick="onChartPeriod(1)">24 Hours</button> 
+					<button id="chart-action3" class="chart-action" onclick="onChartPeriod(2)">7 Days</button> 
+					<button id="chart-action4" class="chart-action" onclick="onChartPeriod(3)">1 Month</button> 
+				</div> 
+			</div>
+
+			<div id="trade-area">
+				<div id="order-book">
+					<li><h1 id="order-title">Orders</h1><h2 id="order-market">XLM : USD</h2></li>
+					<table id="bid-list">
+						<thead><tr><th>Total</th><th>Amount</th><th>Buy</th></tr></thead>
+						<tbody>
+							<tr><td colspan="3"><div style="text-align:center">No orders</div></td></tr>
+						</tbody>
+					</table>
+					<table id="ask-list">
+						<thead><tr><th>Sell</th><th>Amount</th><th>Total</th></tr></thead>
+						<tbody>
+							<tr><td colspan="3"><div style="text-align:center">No orders</div></td></tr>
+						</tbody>
+					</table>
+				</div>
+				<div id="trade-book">
+					<li><h1 id="trade-title">Trades</h1><h2 id="trade-market">XLM : USD</h2></li>
+					<table id="trade-list">
+						<thead><tr><th>Time</th><th>Price</th><th>Amount</th></tr></thead>
+						<tbody>
+							<tr><td colspan="3"><div style="text-align:center">No records</div></td></tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</wrap>
+
+	<wrap>
+		<div id="all-coins-wrap">
+			<div id="all-coins-head"><h1 id="all-coins-title">World Currencies</h1></div>
+			<table id="all-coins">
+				<colgroup>
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+			       <col span="1">
+    			</colgroup>
+				<thead>
+					<tr> 
+						<th onclick="sortTable(event,0,1)">Rank</th> 
+						<th onclick="sortTable(event,1,0)">Symbol</th> 
+						<th onclick="sortTable(event,2,0)">Name</th> 
+						<th onclick="sortTable(event,3,2)">Price USD</th> 
+						<th onclick="sortTable(event,4,2)">Price XLM</th> 
+						<th onclick="sortTable(event,5,1)">Volumen 24hr</th> 
+						<th onclick="sortTable(event,6,1)">Market Cap</th> 
+						<th onclick="sortTable(event,7,2)">Change 1h</th> 
+						<th onclick="sortTable(event,8,2)">Change 24h</th> 
+						<th onclick="sortTable(event,9,1)">Supply</th> 
+					</tr>
+				</thead>
+				<tbody>
+					<tr id="XLM"> <td>1</td> <td>XLM </td> <td>Lumens</td> <td class="price-no">0.0000</td> <td>0.0000</td> <td>0</td> <td>0</td> <td class="go-no">0.00%</td> <td class="go-no">0.00%</td> <td>0</td> </tr>
+				</tbody>
+			</table>
+		</div>
+	</wrap>
+</div>
+
+<footer>
+	<wrap>
+		<h2>Galt Exchange</h2> <h1>GALTEX</h1>
+	</wrap>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="static/d3.v4.3.0.min.js"></script>
+<script src="static/techan.min.js"></script>
+<script src="static/stellar.min.js"></script>
+<script src="static/utils.js"></script>
+<script src="static/main.js"></script>
+</body>
+</html>
