@@ -13,7 +13,7 @@ It allows you to trade in four different markets:
 
 In order to use **GaltEx** all you need to have is a Stellar account. You can buy and sell assets from your own wallet or you can login with your public key to track your orders. Keys are never stored or transmitted anywhere. We advise you to never share your secret keys in websites or apps you don't trust.
 
-**GaltEx** is part of the financial services provided by **GaltBank**, they first crypto bank in the world with the most advanced and feature rich desktop and mobile wallets. **GaltBank** also offers payment services for your shopping needs so you can trade, shop and save with confidence backed by the most trusted bank on the blockchain.
+**GaltEx** is part of the financial services provided by **GaltBank**, the first crypto bank in the world with the most advanced and feature rich desktop and mobile wallets. **GaltBank** also offers payment services for your shopping needs so you can trade, shop and save with confidence backed by the most trusted bank on the blockchain.
 
 https://galtbank.com/galtex
 
