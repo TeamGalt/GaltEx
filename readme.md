@@ -15,6 +15,8 @@ In order to use **GaltEx** all you need to have is a Stellar account. You can bu
 
 **GaltEx** is part of the financial services provided by **GaltBank**, they first crypto bank in the world with the most advanced and feature rich desktop and mobile wallets. **GaltBank** also offers payment services for your shopping needs so you can trade, shop and save with confidence backed by the most trusted bank on the blockchain.
 
+https://galtbank.com/galtex
+
 ### In Code We Trust
 
 ## Credits
