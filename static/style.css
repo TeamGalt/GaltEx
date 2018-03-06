@@ -12,12 +12,16 @@ header h1, header h2, header h3 { display: inline-block; margin: 0; padding: 0; 
 header h1 { font-size: 1.2em; font-weight: 600; margin: 0 20px 0 10px; }
 header h2 { font-size: 1.2em; font-weight: 300; color: #A8B3CE; font-variant: small-caps; }
 header h3 { font-size: 1.2em; font-weight: 300; color: #6E914F; float: right; margin: 0px 10px 0 0; }
-#dollar { font-size: 1.2em; font-weight: 500; color: #8EB16F;}
+header h1 a { color: #FFF; text-decoration: none; }
+header h1 a:hover   { color: #FFF; text-decoration: none; }
+header h1 a:active  { color: #FFF; text-decoration: none; }
+header h1 a:visited { color: #FFF; text-decoration: none; }
 
 #markets { display: inline-block; margin-left: 10px; color: #A8B3CE; font-size: 1.2em; font-weight: 300; font-variant: small-caps; }
 #markets a { display: inline-block; padding: 0px 10px; color: #A8B3CE; text-decoration: none; }
 #markets a:hover { color: #FFF; }
-#markets a.selected { color: #EEE; }
+#markets a.selected  { color: #EEE; }
+#markets a[disabled] { color: #48536E; cursor: text; }
 
 footer { margin: 0; padding: 10px 0; background-color: #1A262C; text-align: right; }
 footer h1, footer h2 { display: inline-block; margin: 0; padding: 0; }
@@ -57,6 +61,7 @@ footer h2 { font-size: 1.0em; font-weight: 300; color: #A8B3CE; }
 .go-no { color: #A8B3CE; }
 .color-bid { color: #6E914F; }
 .color-ask { color: #A55F6B; }
+xlm { display: inline; color: #A8B3CE; }
 
 .center { text-align: center; }
 .warn { color: #A55F6B; }
@@ -105,25 +110,6 @@ svg .grid path       { stroke-width: 0; }
 .chart-action.selected { color: #A8B3CE; background-color: #293941; outline: none; }
 .chart-action:hover { color: #C8D3EE; background-color: #495961; cursor: pointer; }
 
-/* TRADING */
-
-/*#trading  { display: block; width: 584px; height: 197px; margin-top: 10px; background-color: #1A262C; }*/
-/*
-#calc-area  { display: block; width: 584px; height: 160px; margin-top: 10px; padding: 0; }
-#calculator { display: inline-block; float: left; width: 246px; height: 167px; padding: 0px 20px; background-color: #1A262C; margin-right: 12px; }
-#indices    { display: inline-block; float: left; width: 246px; height: 167px; padding: 0px 20px; background-color: #1A262C; }
-
-#calculator h1 { margin: 8px; font-weight: 300; font-size: 1.2em; text-align: center; }
-#calculator li { line-height: 1.4em; padding: 1px 4px 1px 6px; }
-#calculator li label { display: inline-block; width:  90px; color: #A8B3CE; font-variant: small-caps; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-#calculator li input { display: inline-block; width: 120px; padding: 2px 8px; text-align: right; color: #E0E6EA; background-color: #293941; border: 1px solid #192931; border-radius: 3px; }
-
-#indices h1 { margin: 8px; font-weight: 300; font-size: 1.2em; text-align: center; }
-#indices li { line-height: 1.4em; padding: 1px 4px 1px 12px; }
-#indices li:nth-child(even) { background-color: #162228; border: 1px solid #142026;}
-#indices li label { display: inline-block; width:  90px; color: #A8B3CE; font-variant: small-caps; }
-#indices li span  { display: inline-block; width: 130px; text-align: right; }
-*/
 
 /* ALL COINS */
 #all-coins-wrap  { display: block; width: 1090px; min-height: 200px; margin: 12px 0 2px; padding: 10px; background-color: #1A262C; }
@@ -154,7 +140,7 @@ svg .grid path       { stroke-width: 0; }
 #all-coins td:nth-child(9)  { text-align: right; }
 #all-coins td:nth-child(10) { text-align: right; }
 #all-coins tr.select td { background-color: #0A161C; }
-#all-coins tr:hover  td { background-color: #293941; cursor: pointer; }
+/*#all-coins tr:hover  td { background-color: #293941; cursor: pointer; }*/
 
 #promo    { width: 954px; margin: 10px 0 0; padding: 14px 0; text-align: center; background-color: #1A262C; }
 #promo h1 { margin: 0; font-weight: 300; font-size: 1.6em; }
@@ -189,8 +175,8 @@ dec  { color: #678; }
 .form-order label  { display:block; margin-top: 12px; color: #A8B3CE; font-variant: small-caps; text-align: center; }
 .form-order button { display:block; width: 170px; margin-top: 15px; padding: 4px 10px; border: none; }
 .form-order input  { display:block; width: 160px; margin-top:  5px; padding: 2px 4px; font-size: 1.2em; color: #A1A8B7; background-color: #2D3E46; border: 1px solid #36444D; text-align: center; }
-#input-buy  { color: #C5F2AC; background-color: #162228; }
-#input-sell { color: #F57F8B; background-color: #162228; }
+#bid-price { color: #C5F2AC; background-color: #162228; }
+#ask-price { color: #F57F8B; background-color: #162228; }
 
 #button-buy  { color: #FFF; background-color: #4A7025; cursor: pointer; }
 #button-sell { color: #FFF; background-color: #850414; cursor: pointer; }
@@ -224,9 +210,9 @@ dec  { color: #678; }
 
 /* TRADE AREA */
 
-#trade-area  { display: block; width: 700px; height: 420px; margin-top: 10px; padding: 0; }
+#trade-area  { overflow: hidden; display: block; width: 700px; height: 420px; margin-top: 10px; padding: 0; }
 
-#order-book   { overflow: hidden; display: inline-block; width: 408px; min-height: 400px; margin: 0; padding: 12px 8px; background-color: #1A262C; font-size: 0.9em; }
+#order-book   { float: left; overflow: hidden; display: inline-block; width: 408px; min-height: 400px; margin: 0; padding: 12px 8px; background-color: #1A262C; font-size: 0.9em; }
 #order-title  { display: inline-block; width: 194px; margin: 0 0 10px 6px; padding: 0; font-size: 1.4em; font-weight: 300; }
 #order-market { display: inline-block; width: 200px; margin: 0 0 10px; padding: 0; font-size: 1.4em; font-weight: 500; text-align: right; }
 
@@ -251,7 +237,7 @@ dec  { color: #678; }
 #ask-list th { padding: 2px 4px; text-align: right; font-weight: 300; font-variant: small-caps; color: #A8B3CE; }
 #ask-list td { padding: 2px 4px; text-align: right; }
 
-#trade-book   { display: inline-block; width: 250px; min-height: 400px; margin: 0 0 0 6px; padding: 12px 8px; background-color: #1A262C; font-size: 0.9em; }
+#trade-book   { float: right; display: inline-block; width: 250px; min-height: 400px; margin: 0 0 0 6px; padding: 12px 8px; background-color: #1A262C; font-size: 0.9em; }
 #trade-title  { display: inline-block; width:  80px; margin: 0 0 10px 6px; padding: 0; font-size: 1.4em; font-weight: 300; }
 #trade-market { display: inline-block; width: 160px; margin: 0 0 10px; padding: 0; font-size: 1.4em; font-weight: 500; text-align: right; }
 

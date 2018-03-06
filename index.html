@@ -16,10 +16,10 @@
 
 <header>
 	<wrap>
-		<h1>GALTEX</h1> 
+		<h1><a href="../galtex">GALTEX</a></h1> 
 		<h2>Galt Exchange</h2> 
-		<div id="markets"><a href="#" class="selected">Forex</a>  <a href="#">Crypto</a>  <a href="#">Wall St</a>  <a href="#">Galt St</a></div>
-		<h3>GALT <span id="galt-price">1.25</span></h3>
+		<div id="markets"><a href="#" class="selected">Forex</a>  <a href="#" disabled>Crypto</a>  <a href="#" disabled>Wall St</a>  <a href="#" disabled>Galt St</a></div>
+		<h3>GALT:USD <span id="galt-price">0.0000</span></h3>
 	</wrap>
 </header>
 
@@ -28,8 +28,8 @@
 		<div id="market-index">
 			<h1 class="big">Market Indices</h1>
 			<div class="cell">
-				<label>Volumen</label>
-				<span id="total-volumen">0 M</span>
+				<label>Volume</label>
+				<span id="total-volume">0 M</span>
 			</div>
 			<div class="cell">
 				<label>Market Cap</label>
@@ -74,16 +74,16 @@
 				<div class="form-head"><h1 class="form-title">Buy</h1><h2 id="form-buy-sym" class="form-market">XLM : USD</h2></div>
 				<div class="form-order">
 					<div class="form-price">
-						<label>Price <span id="label-buy-sym1">USD</span></label>
-						<input type="textbox" id="input-buy" name="price" value="0.0000">
+						<label id="label-bid-price" for="bid-price" onclick="onBidLabel(this.id)">Price <span id="label-buy-sym1">USD</span></label>
+						<input type="textbox" id="bid-price" name="bid-price" value="0.0000">
 					</div>
 					<div class="form-qty">
-						<label for="input-buy-qty" onclick="onBuyQty()">Amount <span id="input-buy-sym">XLM</span></label>
-						<input type="textbox" id="input-buy-qty" name="input-buy-qty" value="0.0000">
+						<label id="label-bid-amount" for="bid-amount" onclick="onBidLabel(this.id)">Amount <span id="input-buy-sym">XLM</span></label>
+						<input type="textbox" id="bid-amount" name="bid-amount" value="0.0000">
 					</div>
 					<div class="form-amount">
-						<label for="input-buy-usd" onclick="onBuyUsd()">Total <span id="label-buy-sym2">USD</span></label>
-						<input type="textbox" id="input-buy-usd" name="input-buy-usd" value="0.00">
+						<label id="label-bid-total" for="bid-total" onclick="onBidLabel(this.id)">Total <span id="label-buy-sym2">USD</span></label>
+						<input type="textbox" id="bid-total" name="bid-total" value="0.00">
 					</div>
 					<button id="button-buy" onclick="onBuy()">BUY</button>
 				</div>
@@ -93,16 +93,16 @@
 				<div class="form-head"><h1 class="form-title">Sell</h1><h2 id="form-sell-sym" class="form-market">XLM : USD</h2></div>
 				<div class="form-order">
 					<div class="form-price">
-						<label>Price <span id="label-sell-sym1">USD</span></label>
-						<input type="textbox" id="input-sell" name="price" value="0.0000">
+						<label id="label-ask-price" for="ask-price" onclick="onAskLabel(this.id)">Price <span id="label-sell-sym1">USD</span></label>
+						<input type="textbox" id="ask-price" name="ask-price" value="0.0000">
 					</div>
 					<div class="form-qty">
-						<label for="input-sell-qty" onclick="onSellQty()">Amount <span id="input-sell-sym">XLM</span></label>
-						<input type="textbox" id="input-sell-qty" name="input-sell-qty" value="0.0000">
+						<label id="label-ask-amount" for="ask-amount" onclick="onAskLabel(this.id)">Amount <span id="input-sell-sym">XLM</span></label>
+						<input type="textbox" id="ask-amount" name="ask-amount" value="0.0000">
 					</div>
 					<div class="form-amount">
-						<label for="input-sell-usd" onclick="onSellUsd()">Total <span id="label-sell-sym2">USD</span></label>
-						<input type="textbox" id="input-sell-usd" name="input-sell-usd" value="0.00">
+						<label id="label-ask-total" for="ask-total" onclick="onAskLabel(this.id)">Total <span id="label-sell-sym2">USD</span></label>
+						<input type="textbox" id="ask-total" name="ask-total" value="0.00">
 					</div>
 					<button id="button-sell" onclick="onSell()">SELL</button>
 				</div>
@@ -201,7 +201,7 @@
 						<th onclick="sortTable(event,2,0)">Name</th> 
 						<th onclick="sortTable(event,3,2)">Price USD</th> 
 						<th onclick="sortTable(event,4,2)">Price XLM</th> 
-						<th onclick="sortTable(event,5,1)">Volumen 24hr</th> 
+						<th onclick="sortTable(event,5,1)">Volume 24hr</th> 
 						<th onclick="sortTable(event,6,1)">Market Cap</th> 
 						<th onclick="sortTable(event,7,2)">Change 1h</th> 
 						<th onclick="sortTable(event,8,2)">Change 24h</th> 

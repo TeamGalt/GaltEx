@@ -8,7 +8,7 @@ function epoch24h() { return epoch() - (1000*60*60*24); }
 function epoch08d() { return epoch() - (1000*60*60*24*8); }
 function epoch48d() { return epoch() - (1000*60*60*24*48); }
 function isNumber(n){ return !isNaN(parseFloat(n)) && isFinite(n); }
-function numberFrom(text){ return parseFloat(stripCommas(text)); }
+function numberFrom(text){ return (parseFloat(stripCommas(text)) || 0); }
 function countDecs(num) { return num.split('.')[1] ? num.split('.')[1].length : 0; }
 function pretty(json) { return JSON.stringify(json, null, 4); }
 function range(n) { return Array(n).fill(0).map((x,y)=>y); }

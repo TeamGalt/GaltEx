@@ -1,8 +1,10 @@
 // MAIN
 
-var NetworkMode = { Live: 'LIVE', Test: 'TEST' };
-var HorizonUrl  = { Live: 'https://horizon.stellar.org', Test:'https://horizon-testnet.stellar.org' };
-var serverUrl   = HorizonUrl.Test;
+const Markets     = { Forex:0, Crypto:1, WallSt:2, GaltSt:3 };
+const NetworkMode = { Live: 'LIVE', Test:'TEST' };
+const HorizonNet  = { Live: 'https://horizon.stellar.org', Test:'https://horizon-testnet.stellar.org' };
+
+var serverUrl   = HorizonNet.Test;
 var marketPairs = [];
 var baseAsset   = null;
 var cntrAsset   = null;
@@ -11,34 +13,65 @@ var ticker      = null;
 var candles     = {"USD":[]};
 var topten      = ["USD", "EUR", "GBP", "JPY", "CNY", "RUB", "AUD", "CAD", "MXN", "BRL"];
 var issuer      = 'GBANKHXFXNOST75HZRTJGNJWB7QYQ6WWK3PVJKD6VD6ZXPCX3HNNTLLK';
-var chartTicks  = [300000, 900000, 3600000, 86400000, 604800000];
+var chartTicks  = [300000, 900000, 3600000, 86400000, 604800000];  // 5m 15min 1hr 1day 1week 
 
 var state    = {
     network  : 'TEST',
+    dollar   : 0.0,
+    bitcoin  : 0.0,
     stellar  : 0.0,
+    galtxlm  : 0.0,
+    galtusd  : 0.0,
     coin     : 'USD',
     market   : 'XLM:USD',
     period   : 1,
     thousand : ',',
     login    : false,
     account  : null,
-    readOnly : true
+    readOnly : true,
+    ok       : true
 };
-
 
 function main() {
     clearCandles();
-    loadCurrencies();
+    loadCurrencies(Markets.Forex);
 }
 
-function loadCurrencies() {
-    var url = 'data/ticker.json';
+function loadCurrencies(market=Markets.Forex) {
+    console.log('Loading currencies...');
+
+    var url = './data/ticker.json';
+    switch(market) {
+        case Markets.Forex : isAssetBase = false; url = './data/ticker.json'; break
+        case Markets.Crypto: isAssetBase = true;  url = './data/tickercrypto.json'; break
+        case Markets.WallSt: isAssetBase = true;  url = './data/tickerwallst.json'; break
+        case Markets.GaltSt: isAssetBase = true;  url = './data/tickergaltst.json'; break
+        default            : isAssetBase = false; url = './data/ticker.json'; break
+    }
+
     webGet(url, json => {
+        console.log(json);
         ticker = json;
+        state.stellar = ticker['USD'].pricexlm; //console.log('XLM '+state.stellar);
         buildMarketTable(json);
         buildAllCurrenciesTable(json);
         selectCoin('USD');
         enableEvents();
+        loadGaltPrice();
+        console.log('Currencies loaded');
+    });
+}
+
+function loadGaltPrice() {
+    // getOrderbook XLM:GALT
+    var url = serverUrl + '/order_book?buying_asset_type=credit_alphanum4&buying_asset_code=GALT&buying_asset_issuer='+issuer+'&selling_asset_type=native&limit=1';
+    webGet(url, info => {
+        console.log('GALT OFFERS');
+        console.log(info);
+        state.galtxlm = info.asks[0].price;
+        state.galtusd = 1 / state.galtxlm * state.stellar;
+        $('galt-price').innerHTML = money(state.galtusd);
+        console.log('GALT/USD '+state.galtusd);
     });
 }
 
@@ -49,6 +82,7 @@ function buildMarketTable(ticker) {
     for (key in topten) {
         item = ticker[topten[key]];
         if(!item){ continue; }
+        //console.log(item);
         var id     = topten[key];
         var symbol = topten[key];
         var price  = parseFloat(item['priceusd'])    || 0.0;
@@ -96,6 +130,7 @@ function buildAllCurrenciesTable(ticker) {
         item = ticker[key];
         if(item.inactive){ continue }
         n++;
+        //console.log(item);
         var price  = parseFloat(item['priceusd'])  || 0.0;
         var pct01  = parseFloat(item['change01h']) || 0.0;
         var pct24  = parseFloat(item['change24h']) || 0.0;
@@ -122,18 +157,19 @@ function buildAllCurrenciesTable(ticker) {
                    .replace('{change01}' , money(item['change01h'], 2, true))
                    .replace('{class24}'  , 'go-'+trendPct24)
                    .replace('{change24}' , money(item['change24h'], 2, true))
-                   .replace('{supply}'   , money(item['supply'], 0, true));
+                   .replace('{supply}'   , money(item['available'], 0, true));
     }
 
-    totVolume = parseInt(totVolume/1000000);
+    totVolume = parseInt(totVolume/1);  // 1000000
     totMarket = parseInt(totMarket/1000000);
     totChange01 = totChange01 / n;
     totChange24 = totChange24 / n;
     change01 = 'go-' + (totChange01==0 ? "no" : totChange01>0 ? "up" : "dn");
     change24 = 'go-' + (totChange24==0 ? "no" : totChange24>0 ? "up" : "dn");
+    //console.log("Totals", totVolume+'M', totMarket+'M', money(totChange01/n,4), money(totChange24/n,4));
 
-    $('total-volumen').innerHTML   = money(totVolume, 0, true) + ' M';
-    $('total-marketcap').innerHTML = money(totMarket, 0, true) + ' M';
+    $('total-volume').innerHTML    = '<xlm>⩙</xlm>' + money(totVolume, 0, true); // ' M'
+    $('total-marketcap').innerHTML = '<xlm>⩙</xlm>' + money(totMarket, 0, true) + ' M';
     $('total-change01').innerHTML  = money(totChange01, 2, false) + '%';
     $('total-change24').innerHTML  = money(totChange24, 2, false) + '%';
     $('total-change01').className  = change01;
@@ -187,11 +223,18 @@ function selectCoin(coin) {
     clearForms(coin, marketPair, price);
 
     // All coins table
-    var table = $('coins');
-    var rows  = table.tBodies[0].rows
-    for (var i = 0; i < rows.length; i++) {
-        rows[i].className = '';
-        if(rows[i].id==coin) { rows[i].className = 'select'; }
+    var table1 = $('coins');
+    var rows1  = table1.tBodies[0].rows
+    for (var i = 0; i < rows1.length; i++) {
+        rows1[i].className = '';
+        if(rows1[i].id==coin) { rows1[i].className = 'select'; }
+    }
+
+    var table2 = $('all-coins');
+    var rows2  = table2.tBodies[0].rows
+    for (var i = 0; i < rows2.length; i++) {
+        rows2[i].className = '';
+        if(rows2[i].id==coin) { rows2[i].className = 'select'; }
     }
 
     getOrderBook(coin);
@@ -217,15 +260,17 @@ function clearForms(coin, pair, price) {
     $('ask-list').tBodies[0].innerHTML   = emptyRow;
     $('trade-list').tBodies[0].innerHTML = loading;
 
-    $('input-buy').value          = money(price, 4, true);
-    $('input-buy-qty').value      = money(0.0,   4, true);
-    $('input-buy-usd').value      = money(0.0,   2, true);
-    $('input-sell').value         = money(price, 4, true);
-    $('input-sell-qty').value     = money(0.0,   4, true);
-    $('input-sell-usd').value     = money(0.0,   2, true);
+    $('bid-price').value  = money(price, 4, true);
+    $('bid-amount').value = money(0.0,   4, true);
+    $('bid-total').value  = money(0.0,   2, true);
+    $('ask-price').value  = money(price, 4, true);
+    $('ask-amount').value = money(0.0,   4, true);
+    $('ask-total').value  = money(0.0,   2, true);
 }
 
 function getOrderBook(symbol) {
+    console.log('Loading orderbook for '+symbol+'...');
+
     // SYM/XLM Buying native: Base is SYM, Counter is XLM
     var baseUrl = serverUrl + '/order_book?buying_asset_type=native&selling_asset_type=credit_alphanum4&selling_asset_code={symbol}&selling_asset_issuer={issuer}';
     // XLM/SYM Buying asset: Base is XLM, Counter is SYM
@@ -238,7 +283,9 @@ function getOrderBook(symbol) {
 }
 
 function buildOrderbook(info) {
+    console.log(info);
     if(!info || info.error || info.status==500){ 
+        console.log('Error requesting orderbook'); 
         $('bid-list').tBodies[0].innerHTML = '<tr><td colspan="3"><div class="warn center">Error</div></td></tr>';
         $('ask-list').tBodies[0].innerHTML = '<tr><td colspan="3"><div class="warn center">Error</div></td></tr>';
         return;
@@ -287,21 +334,26 @@ function buildOrderbook(info) {
     if(bids[0]){ bidPrice = parseFloat(bids[0].price) } else { bidPrice = marketPairs[symbol]; if(isAssetBase){ bidPrice = 1/bidPrice; } }
     if(asks[0]){ askPrice = parseFloat(asks[0].price) } else { askPrice = marketPairs[symbol]; if(isAssetBase){ askPrice = 1/askPrice; } }
     var avgPrice = (bidPrice + askPrice) / 2;
+    //console.log(0, bidPrice, askPrice, avgPrice);
 
-    if(bids[0]){ $('input-sell').value = money(bidPrice); }
-    if(asks[0]){ $('input-buy').value  = money(askPrice); }
+    if(bids[0]){ $('ask-price').value = money(bidPrice); }
+    if(asks[0]){ $('bid-price').value = money(askPrice); }
 }
 
 function getTradeHistory(symbol) {
+    console.log("Loading trade history...");
     var baseTrades = serverUrl + '/trades?base_asset_type=credit_alphanum4&base_asset_code={symbol}&base_asset_issuer={issuer}&counter_asset_type=native&order=desc&limit=20';
     var cntrTrades = serverUrl + '/trades?base_asset_type=native&counter_asset_type=credit_alphanum4&counter_asset_code={symbol}&counter_asset_issuer={issuer}&order=desc&limit=20';
     var uri = (isAssetBase ? baseTrades : cntrTrades);
     var url = uri.replace('{symbol}', symbol).replace('{issuer}', issuer);
+    console.log('Trades: '+url);
     webGet(url, buildTradeHistory);
 }
 
 function buildTradeHistory(info) {
+    console.log(info);
     if(!info || info.error || info.status==500){ 
+        console.log('Error requesting trade history');
         $('trade-list').tBodies[0].innerHTML = '<tr><td colspan="3"><div class="warn center">Error</div></td></tr>';
         return; 
     }
@@ -313,6 +365,7 @@ function buildTradeHistory(info) {
     var recs  = info['_embedded']['records'];
 
     for(index in recs) {
+        //console.log(recs[index]);
         var item   = recs[index];
         var time   = (new Date(item.ledger_close_time)).toLocaleTimeString();
         var type   = 'sell';
@@ -334,15 +387,18 @@ function buildTradeHistory(info) {
 function getMyOrders() {
     if(!state.login){ return; }
     if(!state.account){ return; }
+    console.log('Loading my orders...');
     var address = ""
     if(state.readOnly){ address = state.account; }
     else { address = state.account.publicKey(); }
-    var url = serverUrl + '/accounts/'+address+'/offers?order=desc&limit=90';
+    var url = serverUrl + '/accounts/'+address+'/offers?order=desc&limit=20';
     webGet(url, showMyOrders);
 }
 
 function showMyOrders(info) {
+    console.log(info);
     if(!info || info.error || info.status==500){ 
+        console.log('Error requesting my orders'); 
         $('myorders-list').tBodies[0].innerHTML = '<tr><td colspan="3"><div class="warn center">Error</div></td></tr>';
         return;
     }
@@ -354,6 +410,8 @@ function showMyOrders(info) {
     var recs  = info['_embedded']['records'];
 
     for(index in recs) {
+        // TODO: Check isAssetBase and invert all
+        //console.log(recs[index]);
         var item     = recs[index];
         var orderId  = item.id;
         var price    = item.price;
@@ -386,10 +444,54 @@ function showMyOrders(info) {
 }
 
 function enableEvents() {
-    $('coins').addEventListener('click', function(event){onCoin(event)}, false);
-    $('all-coins').addEventListener('click', function(event){onAllCoins(event)}, false);
+    $('coins').addEventListener('click',      function(event){ onCoin(event) }, false);
+    $('all-coins').addEventListener('click',  function(event){ onAllCoins(event)}, false);
+    $('bid-price').addEventListener('keyup',  function(event){ onBidKey(event)}, false);
+    $('bid-amount').addEventListener('keyup', function(event){ onBidKey(event)}, false);
+    $('bid-total').addEventListener('keyup',  function(event){ onBidKey(event)}, false);
+    $('ask-price').addEventListener('keyup',  function(event){ onAskKey(event)}, false);
+    $('ask-amount').addEventListener('keyup', function(event){ onAskKey(event)}, false);
+    $('ask-total').addEventListener('keyup',  function(event){ onAskKey(event)}, false);
 }
 
+function onBidKey(event) {
+    calcValue(event.target.id);
+}
+
+function onAskKey(event) {
+    calcValue(event.target.id);
+}
+
+function onBidLabel(id) {
+    refreshValue(id);
+}
+
+function onAskLabel(id) {
+    refreshValue(id);
+}
+
+function calcValue(id) {
+    switch(id){
+        case 'bid-price' : $('bid-total').value  = money(numberFrom($('bid-amount').value) * numberFrom($('bid-price').value)); break;
+        case 'bid-amount': $('bid-total').value  = money(numberFrom($('bid-amount').value) * numberFrom($('bid-price').value)); break;
+        case 'bid-total' : $('bid-amount').value = money(numberFrom($('bid-total').value)  / numberFrom($('bid-price').value || 1)); break;
+        case 'ask-price' : $('ask-total').value  = money(numberFrom($('ask-amount').value) * numberFrom($('ask-price').value)); break;
+        case 'ask-amount': $('ask-total').value  = money(numberFrom($('ask-amount').value) * numberFrom($('ask-price').value)); break;
+        case 'ask-total' : $('ask-amount').value = money(numberFrom($('ask-total').value ) / numberFrom($('ask-price').value || 1)); break;
+    }
+}
+
+function refreshValue(id) {
+    // TODO: REFRESH VALUES
+    switch(id){
+        case 'label-bid-price' : /*$('bid-price').value  = money(0);*/ break;  // latest bid
+        case 'label-bid-amount': /*$('bid-amount').value = money(0);*/ break;  // max amount to buy  from balance
+        case 'label-bid-total' : /*$('bid-total').value  = money(0);*/ break;  // max amount to sell from balance
+        case 'label-ask-price' : /*$('ask-price').value  = money(0);*/ break;  // latest ask
+        case 'label-ask-amount': /*$('ask-amount').value = money(0);*/ break;  // max amount to sell from balance
+        case 'label-ask-total' : /*$('ask-total').value  = money(0);*/ break;  // max amount to buy  from balance
+    }
+}
 
 
 //---- CHART
@@ -403,6 +505,7 @@ function clearCandles() {
 }
 
 function getChartData(symbol='USD') {
+    console.log('Chart ', symbol);
     if(candles[symbol] && candles[symbol][state.period]){ onChartData(candles[symbol][state.period], symbol); return; }
 
     // This works for XLM/SYM, if asset is base use SYM/XLM
@@ -412,7 +515,11 @@ function getChartData(symbol='USD') {
     var counterAssetIssuer = issuer;
     //var resolution       = 300000;       // millis 300000|900000|3600000|86400000|604800000 = 5m 15min 1hr 1day 1week 
     var resolution         = chartTicks[state.period]; // millis 300000|900000|3600000|86400000|604800000 = 5m 15min 1hr 1day 1week = 48 ticks x 4h 12h 2d 48d 336d
-    var startTime = epoch24h();
+    var startTime          = epoch08d();
+    var endTime            = epoch();  // 1512775500000
+    var limit              = 48;
+    var order              = 'desc';
+
     switch(state.period){
         case 0:  startTime = epoch04h(); break;
         case 1:  startTime = epoch24h(); break;
@@ -420,9 +527,9 @@ function getChartData(symbol='USD') {
         case 3:  startTime = epoch48d(); break;
         default: startTime = epoch24h(); break;
     }
-    var endTime = epoch();  // 1512775500000
-    var limit   = 100;
-    var order   = 'asc';
+    
+    var resolution = 900000;
+    var startTime = epoch08d();
 
     var url = serverUrl+'/trade_aggregations?'
             + 'base_asset_type='+baseAssetType
@@ -453,18 +560,23 @@ function getChartData(symbol='USD') {
             + '&order='+order;
     }
 
+    console.log(url);
     webGet(url, onChartData, symbol);
 }
 
 function onChartData(info, symbol) {
+    console.log('ONCHART', info);
     if(!info || info.error || info.status==500){ console.log('Error requesting chart data'); return; }
 
+    console.log(state);
+    console.log(candles);
     if(!candles[symbol]){ candles[symbol] = []; }
     candles[symbol][state.period] = info;  // Cache chart data for faster drawing
     $('chart-label').innerHTML = 'XLM : '+symbol; //currentCoinName();
 
     if(!info['_embedded']){ console.log('Error requesting chart data'); return; }
     var data = parseChartData(info['_embedded']['records']);
+    console.log(data);
 
     drawChart(data, symbol);
 }
@@ -486,6 +598,7 @@ function parseChartData(inData) {
 }
 
 function drawChart(data, id="BTC") {
+    //console.log('CHART', data);
     var area = $('chart-area');
     var margin = {top: 20, right: 10, bottom: 20, left: 50};
     var width  = area.offsetWidth - margin.left - margin.right;
@@ -526,6 +639,7 @@ function drawChart(data, id="BTC") {
     }
 
     function draw(data) {
+        //console.log('DRAW',data);
         x.domain(data.map(candlestick.accessor().d));
         y.domain(techan.scale.plot.ohlc(data, candlestick.accessor()).domain());
         svg.selectAll("g.candlestick").datum(data).call(candlestick);
@@ -565,6 +679,7 @@ function removeChart() {
 }
 
 function onChartPeriod(n) {
+    //console.log(ticks);
     state.period = n;
     setChartButtons(n);
     getChartData(state.coin);
@@ -594,7 +709,7 @@ function onLogin() {
     var key = $('login-key').value;
     if(!key) { return; }
     if(key.length != 56) { alert('0 Invalid key. Access denied.'); return; }
-    var prefix = key.substr(0,1);
+    var prefix = key.substr(0,1); console.log(prefix);
     if(prefix!='G' && prefix!='S') { alert('1 Invalid key. Access denied.'); return; }
     if(prefix=='G'){ state.account = key; state.readOnly = true; /* READ-ONLY */ }
     else if(prefix=='S'){ state.account = StellarSdk.Keypair.fromSecret(key); state.readOnly = false; }
@@ -603,6 +718,7 @@ function onLogin() {
     $('login-key').setAttribute('disabled','true');
     $('login-go').innerHTML = 'Logout';
     state.login = true;   // Logged in
+    console.log(state);
     getMyOrders();
 }
 
@@ -633,36 +749,18 @@ function onSell() {
 // SELL ASK:{buying:cntr, selling:base, amount:amount, price:price}         0.45 USD for 1 XLM
 // BUY  BID:{buying:base, selling:cntr, amount:amount*price, price:1/price} 2.22 XLM for 1 USD = 1/price
 // PRICE: How many units of buying it takes to get 1 unit of selling
-function askOffer() {
-    //showStatus('Selling...');
-    var askAmount = numberFrom($('input-sell-qty').value);
-    var askPrice  = numberFrom($('input-sell').value);
-    var amount    = (1*askAmount).toFixed(7);
-    var price     = (1*askPrice).toFixed(7);
-    var offer     = buildOffer('ASK', 0, baseAsset, cntrAsset, amount, price);
-    
-    disableAskButton();
-    manageOffer(offer, result => {
-        if(result.ok){ 
-            getOrderBook(state.coin);
-            getTradeHistory(state.coin);
-            getMyOrders();
-        }
-        else { alert('Something went wrong. Try again later'+'\n'+result.message); }
-        enableAskButton();
-    });
-}
 
 function bidOffer() {
     //showStatus('Buying...');
-    var bidAmount = numberFrom($('input-buy-qty').value); 
-    var bidPrice  = numberFrom($('input-buy').value);
+    var bidAmount = numberFrom($('bid-amount').value); 
+    var bidPrice  = numberFrom($('bid-price').value);
     //var amount    = (1*bidAmount).toFixed(7);
     var amount    = (bidAmount * bidPrice).toFixed(7);
     //var price     = (1 / bidPrice).toFixed(7);
     var fractal   = StellarSdk.Operation._toXDRPrice(bidPrice.toFixed(7))._attributes;
     var price     = {n: fractal.d, d:fractal.n};  // Swap num/den 
     var offer     = buildOffer('BID', 0, baseAsset, cntrAsset, amount, price);
+    console.log('BID', 0, baseAsset, cntrAsset, amount, price);
 
     disableBidButton();
     manageOffer(offer, result => {
@@ -673,6 +771,27 @@ function bidOffer() {
         }
         else { alert('Something went wrong. Try again later'+'\n'+result.message); }
         enableBidButton();
+    });
+}
+
+function askOffer() {
+    //showStatus('Selling...');
+    var askAmount = numberFrom($('ask-amount').value);
+    var askPrice  = numberFrom($('ask-price').value);
+    var amount    = (1*askAmount).toFixed(7);
+    var price     = (1*askPrice).toFixed(7);
+    var offer     = buildOffer('ASK', 0, baseAsset, cntrAsset, amount, price);
+    console.log('ASK', 0, baseAsset, cntrAsset, amount, price);
+    
+    disableAskButton();
+    manageOffer(offer, result => {
+        if(result.ok){ 
+            getOrderBook(state.coin);
+            getTradeHistory(state.coin);
+            getMyOrders();
+        }
+        else { alert('Something went wrong. Try again later'+'\n'+result.message); }
+        enableAskButton();
     });
 }
 
@@ -729,26 +848,31 @@ function buildOffer(type, orderId, baseAsset, cntrAsset, amount, price) {
 }
 
 function manageOffer(offer, callback) {
+    console.log("Place offer on SDEX");
+
     var server  = null;
     var source  = state.account;
 
     if (state.network == NetworkMode.Live) {
         StellarSdk.Network.usePublicNetwork();
-        server = new StellarSdk.Server(HorizonUrl.Live);
+        server = new StellarSdk.Server(HorizonNet.Live);
     } else {
         StellarSdk.Network.useTestNetwork();
-        server = new StellarSdk.Server(HorizonUrl.Test);
+        server = new StellarSdk.Server(HorizonNet.Test);
     }
 
     server.loadAccount(source.publicKey()).then(account => {
+        console.log("Building offer...");
         var builder = new StellarSdk.TransactionBuilder(account);
         builder.addOperation(StellarSdk.Operation.manageOffer(offer));
         var tx = builder.build();
         tx.sign(source);
         return server.submitTransaction(tx);
     }).then(result => {
+        console.log('Success!', result);
         callback({ok:true, message: 'Success!'});
     }).catch(error => {
+        console.log(error); 
         var message = error.data.extras.result_codes.operations[0] || error.message;
         callback({ok:false, message: message});
     });
